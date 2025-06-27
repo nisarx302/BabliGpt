@@ -30,13 +30,13 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background-color: var(--body-bg);
+            background: var(--body-bg);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             perspective: 1000px;
             padding: 20px;
             box-sizing: border-box;
-            transition: background-color 0.8s ease;
+            transition: background 0.8s ease;
         }
         
         #theme-switcher {
@@ -129,22 +129,14 @@
         .chat-ui { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 10px; }
         .action-buttons { display: flex; gap: 10px; width: 100%; }
         .chat-box { 
-            background: var(--ui-bg-color); 
-            border: 1px solid var(--ui-border-color); 
-            border-radius: 15px; 
-            padding: 15px; 
-            /* === CHAT BOX HEIGHT INCREASED === */
-            height: 130px; 
-            overflow-y: auto; 
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); 
-            color: var(--text-color); 
-            font-size: 14px; 
-            line-height: 1.5; 
-            transition: all 0.8s ease; 
+            background: var(--ui-bg-color); border: 1px solid var(--ui-border-color); border-radius: 15px; 
+            padding: 15px; height: 130px; overflow-y: auto; 
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); color: var(--text-color); font-size: 14px; 
+            line-height: 1.5; transition: all 0.8s ease; 
         }
         .message { margin-bottom: 10px; max-width: 85%; padding: 8px 12px; border-radius: 10px; }
         .message.user { background-color: var(--accent-color); color: white; margin-left: auto; border-bottom-right-radius: 2px; transition: background-color 0.8s ease; }
-        .message.bot { background-color: var(--ui-bg-color); color: var(--text-color); margin-right: auto; border-bottom-left-radius: 2px; transition: background-color 0.8s ease; }
+        .message.bot { background-color: var(--ui-bg-color); color: var(--text-color); margin-right: auto; border-bottom-left-radius: 2px; transition: background-color 0.8s ease, color 0.8s ease; }
         .input-area { display: flex; gap: 10px; }
         #user-input { flex-grow: 1; border: 1px solid var(--ui-border-color); border-radius: 10px; padding: 10px 15px; font-size: 14px; background: var(--ui-bg-color); color: var(--text-color); outline: none; transition: all 0.8s ease; }
         #user-input:focus { box-shadow: 0 0 0 3px var(--accent-color); }
@@ -154,44 +146,49 @@
         .loading-spinner { display: none; margin: 10px auto; width: 24px; height: 24px; border: 3px solid rgba(183, 169, 149, 0.3); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* === WATER THEME (IMPROVED) === */
+        /* --- WATER THEME --- */
         .water-theme {
             --body-bg: linear-gradient(170deg, #0d4a7f, #1e88e5, #42a5f5);
-            --accent-color: #81d4fa;
-            --text-color: #ffffff;
-            /* === UI COLORS IMPROVED === */
-            --ui-bg-color: rgba(13, 71, 128, 0.4);
-            --ui-border-color: rgba(255, 255, 255, 0.3);
+            --accent-color: #81d4fa; --text-color: #ffffff;
+            --ui-bg-color: rgba(13, 71, 128, 0.4); --ui-border-color: rgba(255, 255, 255, 0.3);
             --eye-color: #e1f5fe;
         }
-        
-        .water-theme::before {
-            content: ''; position: absolute; top: 0; left: -100%; width: 200%; height: 100%;
-            background: linear-gradient(45deg, rgba(13, 71, 128, 0.3), transparent 30%, transparent 70%, rgba(77, 182, 172, 0.3));
-            animation: wave 15s linear infinite; z-index: -1;
-        }
+        .water-theme::before { content: ''; position: absolute; top: 0; left: -100%; width: 200%; height: 100%; background: linear-gradient(45deg, rgba(13, 71, 128, 0.3), transparent 30%, transparent 70%, rgba(77, 182, 172, 0.3)); animation: wave 15s linear infinite; z-index: -1; }
         @keyframes wave { 0% { transform: translateX(50%) rotate(0deg); } 100% { transform: translateX(-50%) rotate(360deg); } }
-        
-        /* === BUTTONS IMPROVED === */
-        .water-theme .action-button {
-            border: 1px solid rgba(255,255,255,0.4);
-            background: rgba(0, 188, 212, 0.4); /* Vibrant teal color */
-            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-        }
-        .water-theme .action-button:hover {
-             background: rgba(0, 188, 212, 0.6); /* Lighter on hover */
-             border-radius: 50%;
-        }
-        
-        .water-theme .message.user {
-             background-color: rgba(129, 212, 250, 0.8); /* Opaque user message */
-        }
-
-        .ripple {
-            position: absolute; border-radius: 50%; background-color: rgba(255, 255, 255, 0.7);
-            transform: scale(0); animation: ripple-effect 0.6s linear;
-        }
+        .water-theme .action-button { border: 1px solid rgba(255,255,255,0.4); background: rgba(0, 188, 212, 0.4); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+        .water-theme .action-button:hover { background: rgba(0, 188, 212, 0.6); border-radius: 50%; }
+        .water-theme .message.user { background-color: rgba(129, 212, 250, 0.8); }
+        .ripple { position: absolute; border-radius: 50%; background-color: rgba(255, 255, 255, 0.7); transform: scale(0); animation: ripple-effect 0.6s linear; }
         @keyframes ripple-effect { to { transform: scale(4); opacity: 0; } }
+
+        /* === METAL THEME (NEW) === */
+        .metal-theme {
+            --body-bg: #2c3e50;
+            --accent-color: #bdc3c7; /* Silver */
+            --text-color: #ecf0f1; /* Light silver */
+            --ui-bg-color: rgba(44, 62, 80, 0.5);
+            --ui-border-color: rgba(189, 195, 199, 0.3);
+            --eye-color: #ecf0f1;
+        }
+        .metal-theme::after { /* Using ::after to not conflict with water theme */
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 1px, transparent 1px, transparent 10px);
+            animation: metal-slide 80s linear infinite; z-index: -1;
+        }
+        @keyframes metal-slide { from { background-position: 0 0; } to { background-position: -400px 400px; } }
+        .metal-theme .action-button {
+            border: 1px solid var(--accent-color);
+            background: linear-gradient(145deg, #59616a, #464e59);
+            border-radius: 5px; /* Geometric shape */
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        .metal-theme .action-button:hover { background: linear-gradient(145deg, #6b737d, #59616a); }
+        .metal-theme .action-button .ripple { display: none; } /* Disable ripple for metal theme */
+        .metal-theme .message.user { background-color: #34495e; border: 1px solid var(--accent-color); }
+
 
     </style>
 </head>
@@ -265,10 +262,10 @@
             if (babliThemes[currentBabliThemeIndex]) { characterBody.classList.add(babliThemes[currentBabliThemeIndex]); }
         });
 
-        // PAGE THEME SWITCHER LOGIC
+        // PAGE THEME SWITCHER LOGIC (UPDATED)
         const themeSwitcher = document.getElementById('theme-switcher');
         const pageBody = document.getElementById('page-body');
-        const pageThemes = ['default', 'water-theme'];
+        const pageThemes = ['default', 'water-theme', 'metal-theme']; // Added metal theme
         let currentPageThemeIndex = 0;
         themeSwitcher.addEventListener('click', () => {
             pageBody.classList.remove(pageThemes[currentPageThemeIndex]);
@@ -279,14 +276,17 @@
         // RIPPLE EFFECT LOGIC
         document.querySelectorAll('.action-button').forEach(button => {
             button.addEventListener('click', function (e) {
-                const x = e.clientX - e.target.offsetLeft;
-                const y = e.clientY - e.target.offsetTop;
-                const ripples = document.createElement('span');
-                ripples.style.left = x + 'px';
-                ripples.style.top = y + 'px';
-                ripples.classList.add('ripple');
-                this.appendChild(ripples);
-                setTimeout(() => { ripples.remove() }, 600);
+                // Only create ripple if not in metal theme
+                if (!pageBody.classList.contains('metal-theme')) {
+                    const x = e.clientX - e.target.offsetLeft;
+                    const y = e.clientY - e.target.offsetTop;
+                    const ripples = document.createElement('span');
+                    ripples.style.left = x + 'px';
+                    ripples.style.top = y + 'px';
+                    ripples.classList.add('ripple');
+                    this.appendChild(ripples);
+                    setTimeout(() => { ripples.remove() }, 600);
+                }
             });
         });
 
