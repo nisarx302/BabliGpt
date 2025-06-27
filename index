@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with 3D Fluffy BABLi</title>
+    <style>
+        :root {
+            --mouse-x: 0;
+            --mouse-y: 0;
+            --bg-color: #f0e8d9;
+            --char-color-light: #ffffff;
+            --char-color-dark: #f5f1e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --accent-color: #c9bba8;
+            --text-color: #5c5248;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            perspective: 1000px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .character-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s linear;
+            transform: rotateX(calc(var(--mouse-y) * -7deg)) rotateY(calc(var(--mouse-x) * 7deg));
+            transform-style: preserve-3d;
+            margin-bottom: 20px;
+        }
+
+        .character-body {
+            position: absolute;
+            width: 180px;
+            height: 200px;
+            background: radial-gradient(circle at 50% 40%, var(--char-color-light), var(--char-color-dark));
+            border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+            box-shadow:
+                inset 0 0 20px rgba(255, 255, 255, 0.8),
+                0 10px 15px var(--shadow-color),
+                0 0 5px var(--char-color-light),
+                0 0 10px var(--char-color-light),
+                0 0 20px var(--char-color-light),
+                0 0 30px var(--char-color-dark),
+                0 0 40px var(--char-color-dark);
+            animation: float 8s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateZ(20px);
+        }
+
+        .name {
+            font-size: 26px;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+            transform: translateY(30px);
+            user-select: none;
+        }
+
+        .limb {
+            position: absolute;
+            background: var(--char-color-dark);
+            box-shadow: 0 4px 8px var(--shadow-color);
+            border-radius: 50px;
+        }
+
+        .arm { width: 35px; height: 70px; bottom: 60px; }
+        .arm.left { left: -15px; transform: rotate(20deg) translateZ(-10px); }
+        .arm.right { right: -15px; transform: rotate(-20deg) translateZ(-10px); }
+        .leg { width: 45px; height: 55px; bottom: -20px; }
+        .leg.left { left: 40px; transform: rotate(-10deg) translateZ(-5px); }
+        .leg.right { right: 40px; transform: rotate(10deg) translateZ(-5px); }
+        
+        .character-body::before, .character-body::after {
+            content: ''; position: absolute; width: 15px; height: 20px;
+            background: rgba(180, 170, 160, 0.15); border-radius: 50%;
+            top: 65px; filter: blur(2px);
+        }
+        .character-body::before { left: 55px; transform: rotate(-15deg); }
+        .character-body::after { right: 55px; transform: rotate(15deg); }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); box-shadow: 0 10px 15px var(--shadow-color); }
+            50% { transform: translateY(-15px) rotate(3deg); box-shadow: 0 25px 25px var(--shadow-color); }
+        }
+
+        /* --- Gemini API Chat Interface --- */
+        .chat-ui {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-box {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--char-color-dark);
+            border-radius: 15px;
+            padding: 15px;
+            height: 100px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+            color: var(--text-color);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 10px;
+        }
+
+        .message.user {
+            background-color: var(--accent-color);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 2px;
+        }
+
+        .message.bot {
+            background-color: white;
+            color: var(--text-color);
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #user-input {
+            flex-grow: 1;
+            border: 1px solid var(--char-color-dark);
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 14px;
+            background: white;
+            color: var(--text-color);
+            outline: none;
+            transition: box-shadow 0.2s;
+        }
+        
+        #user-input:focus {
+            box-shadow: 0 0 0 3px var(--accent-color);
+        }
+
+        .action-button {
+            border: none;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .action-button:hover {
+            background-color: #b7a995;
+        }
+        .action-button:active {
+            transform: scale(0.97);
+        }
+        
+        .loading-spinner {
+            display: none; /* Hidden by default */
+            margin: 10px auto;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(183, 169, 149, 0.3);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="character-container" id="character-container">
+        <div class="limb arm left"></div>
+        <div class="limb arm right"></div>
+        <div class="limb leg left"></div>
+        <div class="limb leg right"></div>
+        <div class="character-body">
+            <div class="name">BABLI</div>
+        </div>
+    </div>
+    
+    <div class="chat-ui">
+        <div class="chat-box" id="chat-box">
+             <div class="message bot">Hi! I'm ცค๖Ɩⁱ. Mujy Kush Kho Ya Me Tumy Ik Khani Sunata Hu!</div>
+        </div>
+        <div class="loading-spinner" id="loading-spinner"></div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type Your Msg...">
+            <button class="action-button" id="send-button">Fluffy</button>
+        </div>
+        <button class="action-button" id="story-button">Khani Sunao ✨</button>
+    </div>
+
+    <script>
+        // --- Existing 3D Parallax Logic ---
+        const container = document.getElementById('character-container');
+        document.body.addEventListener('mousemove', (e) => {
+            const rect = container.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const mouseX = (e.clientX - centerX) / (window.innerWidth / 2);
+            const mouseY = (e.clientY - centerY) / (window.innerHeight / 2);
+            container.style.setProperty('--mouse-x', mouseX);
+            container.style.setProperty('--mouse-y', mouseY);
+        });
+        document.body.addEventListener('mouseleave', () => {
+             container.style.setProperty('--mouse-x', 0);
+             container.style.setProperty('--mouse-y', 0);
+        });
+
+        // --- Gemini API Integration ---
+        const sendButton = document.getElementById('send-button');
+        const storyButton = document.getElementById('story-button');
+        const userInput = document.getElementById('user-input');
+        const chatBox = document.getElementById('chat-box');
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        // IMPORTANT: Replace this with your own Gemini API Key
+        // Get your key from Google AI Studio: https://aistudio.google.com/app/apikey
+        const apiKey = "AIzaSyBLyFM6e8yUoyBjBvsgrDtHyLlGOaE_qDI"; 
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+        // Function to call the Gemini API
+        async function getGeminiResponse(prompt) {
+            loadingSpinner.style.display = 'block';
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
+            // This check is important. It tells you if the key has been replaced.
+            if (apiKey === "YOUR_GEMINI_API_KEY_HERE") {
+                loadingSpinner.style.display = 'none';
+                return "Please replace 'YOUR_GEMINI_API_KEY_HERE' in the code with your actual Gemini API key to enable the chat.";
+            }
+
+            try {
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: [{ text: prompt }]
+                    }]
+                };
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("API Error Details:", errorData);
+                    throw new Error(`API error (${response.status}): ${errorData.error?.message || 'Unknown error'}`);
+                }
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                }
+                return "I'm a little tangled up and can't think of what to say!";
+            } catch (error) {
+                console.error("Gemini API Call Failed:", error);
+                return "Oops! Something went wrong. Please double-check that your Gemini API key is correct and valid, and that the API is enabled in your Google Cloud project.";
+            } finally {
+                 loadingSpinner.style.display = 'none';
+            }
+        }
+
+        // Function to add a message to the chat display
+        function addMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', sender);
+            messageElement.textContent = text;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Event listener for the "Send" button
+        sendButton.addEventListener('click', async () => {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            userInput.value = '';
+
+            const prompt = `You are BABLi, a cute, Naughty, tharki An very fluffy, and friendly character made of lint. A user is talking to you. Be sweet, curious, and keep your answers very short and cute, like a child would speak, Always add Small Love Poetry in end of msg, Use  "Modern Colloquial Urdu"  "Informal Conversational Urdu"
+Roman Urdu, use lots of Chat releted emojis in chat, i am also babli call me babli to. User's message: "${message}"`;
+            const botResponse = await getGeminiResponse(prompt);
+            addMessage(botResponse, 'bot');
+        });
+        
+        // Allow sending with Enter key
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+
+        // Event listener for the "Tell me a story" button
+        storyButton.addEventListener('click', async () => {
+            addMessage("Apny Bary me Kush Btao!", 'user');
+            const prompt = "You are BABLi, a cute, Naughty, very fluffy, and friendly character made of Cotton🌨️. Tell a very short (2-3 sentences), happy, and simple story about one of your tiny adventures, for example getting stuck on a sock or exploring a pocket.";
+            const story = await getGeminiResponse(prompt);
+            addMessage(story, 'bot');
+        });
+
+    </script>
+</body>
+</html>
