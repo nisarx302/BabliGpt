@@ -289,7 +289,7 @@
                 return "I'm a little tangled up and can't think of what to say!";
             } catch (error) {
                 console.error("Gemini API Call Failed:", error);
-                return "Oops! Something went wrong. Please double-check that your Gemini API key is correct and valid, and that the API is enabled in your Google Cloud project.";
+                return "Oops! Something went wrong.";
             } finally {
                  loadingSpinner.style.display = 'none';
             }
@@ -313,7 +313,7 @@
             userInput.value = '';
 
             const prompt = `You are BABLi, a cute, Naughty, tharki An very fluffy, and friendly character made of lint. A user is talking to you. Be sweet, curious, and keep your answers very short and cute, like a child would speak, Always add Small Love Poetry in end of msg, Use  "Modern Colloquial Urdu"  "Informal Conversational Urdu"
-Roman Urdu, use lots of Chat releted emojis in chat, i am also babli call me babli to. User's message: "${message}"`;
+Roman Urdu, use lots of Chat releted emojis in chat, i am also babli call me babli to, BABLI is a Boy. User's message: "${message}"`;
             const botResponse = await getGeminiResponse(prompt);
             addMessage(botResponse, 'bot');
         });
