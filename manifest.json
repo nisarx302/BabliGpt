@@ -1,0 +1,23 @@
+{
+  "name": "Chat with BABLi",
+  "short_name": "BABLi",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f0e8d9",
+  "theme_color": "#c9bba8",
+  "description": "A cute, fluffy, interactive character you can chat with.",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
