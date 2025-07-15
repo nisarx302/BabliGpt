@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat with 3D Fluffy BABLi</title>
+    <!-- === PWA & THEME COLOR === -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f0e8d9">
     <!-- === FAVICON LINE === -->
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/SaeedX302/file-storage-2/main/pictures/png/11zon_cropped.png">
+    <link rel="icon" type="image/png" href="favicon.png">
     
     <style>
         :root {
@@ -30,13 +33,13 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: var(--body-bg);
+            background-color: var(--body-bg);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             perspective: 1000px;
             padding: 20px;
             box-sizing: border-box;
-            transition: background 0.8s ease;
+            transition: background-color 0.8s ease;
         }
         
         #theme-switcher {
@@ -136,7 +139,7 @@
         }
         .message { margin-bottom: 10px; max-width: 85%; padding: 8px 12px; border-radius: 10px; }
         .message.user { background-color: var(--accent-color); color: white; margin-left: auto; border-bottom-right-radius: 2px; transition: background-color 0.8s ease; }
-        .message.bot { background-color: var(--ui-bg-color); color: var(--text-color); margin-right: auto; border-bottom-left-radius: 2px; transition: background-color 0.8s ease, color 0.8s ease; }
+        .message.bot { background-color: var(--ui-bg-color); color: var(--text-color); margin-right: auto; border-bottom-left-radius: 2px; transition: background-color 0.8s ease; }
         .input-area { display: flex; gap: 10px; }
         #user-input { flex-grow: 1; border: 1px solid var(--ui-border-color); border-radius: 10px; padding: 10px 15px; font-size: 14px; background: var(--ui-bg-color); color: var(--text-color); outline: none; transition: all 0.8s ease; }
         #user-input:focus { box-shadow: 0 0 0 3px var(--accent-color); }
@@ -160,39 +163,56 @@
         .water-theme .message.user { background-color: rgba(129, 212, 250, 0.8); }
         .ripple { position: absolute; border-radius: 50%; background-color: rgba(255, 255, 255, 0.7); transform: scale(0); animation: ripple-effect 0.6s linear; }
         @keyframes ripple-effect { to { transform: scale(4); opacity: 0; } }
-
-        /* === METAL THEME (NEW) === */
-        .metal-theme {
-            --body-bg: #2c3e50;
-            --accent-color: #bdc3c7; /* Silver */
-            --text-color: #ecf0f1; /* Light silver */
-            --ui-bg-color: rgba(44, 62, 80, 0.5);
-            --ui-border-color: rgba(189, 195, 199, 0.3);
-            --eye-color: #ecf0f1;
+        
+        /* --- CHANGELOG MODAL --- */
+        .changelog-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .metal-theme::after { /* Using ::after to not conflict with water theme */
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 1px, transparent 1px, transparent 10px);
-            animation: metal-slide 80s linear infinite; z-index: -1;
+        .changelog-overlay.visible { opacity: 1; visibility: visible; }
+        .changelog-modal {
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            text-align: center;
         }
-        @keyframes metal-slide { from { background-position: 0 0; } to { background-position: -400px 400px; } }
-        .metal-theme .action-button {
-            border: 1px solid var(--accent-color);
-            background: linear-gradient(145deg, #59616a, #464e59);
-            border-radius: 5px; /* Geometric shape */
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
+        .changelog-modal h2 { margin-top: 0; color: #333; }
+        .changelog-modal ul { list-style: none; padding: 0; text-align: left; }
+        .changelog-modal li { margin-bottom: 10px; color: #555; }
+        .changelog-modal li::before { content: '✨'; margin-right: 10px; }
+        .changelog-modal button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            background: #c9bba8;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
         }
-        .metal-theme .action-button:hover { background: linear-gradient(145deg, #6b737d, #59616a); }
-        .metal-theme .action-button .ripple { display: none; } /* Disable ripple for metal theme */
-        .metal-theme .message.user { background-color: #34495e; border: 1px solid var(--accent-color); }
-
 
     </style>
 </head>
 <body id="page-body" class="default">
+    <div class="changelog-overlay" id="changelog-overlay">
+        <div class="changelog-modal">
+            <h2>Naya Kya Hai?</h2>
+            <ul>
+                <li>Ab Yeh Ek App Hai! Aap isay 'install' kar sakte hain.</li>
+                <li>Ab yeh offline bhi chalegi! 🚀</li>
+            </ul>
+            <button id="close-changelog">Samajh Gaya!</button>
+        </div>
+    </div>
+
     <button id="theme-switcher">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zM0 12C0 5.4 5.4 0 12 0s12 5.4 12 12-5.4 12-12 12S0 18.6 0 12zm12-9a9 9 0 0 0-9 9 9 9 0 0 0 9 9z"/></svg>
     </button>
@@ -224,6 +244,17 @@
     </div>
 
     <script>
+        // --- PWA SERVICE WORKER REGISTRATION ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('✅ ServiceWorker registered!', registration.scope);
+                }, err => {
+                    console.log('❌ ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    
         // --- 3D & EYE LOGIC ---
         const container = document.getElementById('character-container');
         const pupils = document.querySelectorAll('.pupil');
@@ -262,10 +293,10 @@
             if (babliThemes[currentBabliThemeIndex]) { characterBody.classList.add(babliThemes[currentBabliThemeIndex]); }
         });
 
-        // PAGE THEME SWITCHER LOGIC (UPDATED)
+        // PAGE THEME SWITCHER LOGIC
         const themeSwitcher = document.getElementById('theme-switcher');
         const pageBody = document.getElementById('page-body');
-        const pageThemes = ['default', 'water-theme', 'metal-theme']; // Added metal theme
+        const pageThemes = ['default', 'water-theme'];
         let currentPageThemeIndex = 0;
         themeSwitcher.addEventListener('click', () => {
             pageBody.classList.remove(pageThemes[currentPageThemeIndex]);
@@ -276,19 +307,29 @@
         // RIPPLE EFFECT LOGIC
         document.querySelectorAll('.action-button').forEach(button => {
             button.addEventListener('click', function (e) {
-                // Only create ripple if not in metal theme
-                if (!pageBody.classList.contains('metal-theme')) {
-                    const x = e.clientX - e.target.offsetLeft;
-                    const y = e.clientY - e.target.offsetTop;
-                    const ripples = document.createElement('span');
-                    ripples.style.left = x + 'px';
-                    ripples.style.top = y + 'px';
-                    ripples.classList.add('ripple');
-                    this.appendChild(ripples);
-                    setTimeout(() => { ripples.remove() }, 600);
-                }
+                const x = e.clientX - e.target.offsetLeft;
+                const y = e.clientY - e.target.offsetTop;
+                const ripples = document.createElement('span');
+                ripples.style.left = x + 'px';
+                ripples.style.top = y + 'px';
+                ripples.classList.add('ripple');
+                this.appendChild(ripples);
+                setTimeout(() => { ripples.remove() }, 600);
             });
         });
+
+        // CHANGELOG LOGIC
+        const changelogOverlay = document.getElementById('changelog-overlay');
+        const closeChangelogButton = document.getElementById('close-changelog');
+        const lastVersion = 'pwa-v1'; // Change this for future updates
+        if (localStorage.getItem('seenVersion') !== lastVersion) {
+            changelogOverlay.classList.add('visible');
+        }
+        closeChangelogButton.addEventListener('click', () => {
+            changelogOverlay.classList.remove('visible');
+            localStorage.setItem('seenVersion', lastVersion);
+        });
+
 
         // --- GEMINI API ---
         const apiKey = "AIzaSyBLyFM6e8yUoyBjBvsgrDtHyLlGOaE_qDI"; 
