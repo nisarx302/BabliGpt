@@ -33,19 +33,26 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background-color: var(--body-bg);
+            background: var(--body-bg);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             perspective: 1000px;
             padding: 20px;
             box-sizing: border-box;
-            transition: background-color 0.8s ease;
+            transition: background 0.8s ease;
         }
         
-        #theme-switcher {
+        /* === TOP RIGHT CONTROLS CONTAINER === */
+        .top-right-controls {
             position: absolute;
             top: 20px;
             right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .control-button {
             width: 50px;
             height: 50px;
             background: var(--ui-bg-color);
@@ -57,13 +64,12 @@
             justify-content: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
-            z-index: 100;
         }
-        #theme-switcher:hover {
+        .control-button:hover {
             transform: scale(1.1);
             box-shadow: 0 6px 15px rgba(0,0,0,0.15);
         }
-        #theme-switcher svg {
+        .control-button svg {
             width: 24px;
             height: 24px;
             fill: var(--text-color);
@@ -139,7 +145,7 @@
         }
         .message { margin-bottom: 10px; max-width: 85%; padding: 8px 12px; border-radius: 10px; }
         .message.user { background-color: var(--accent-color); color: white; margin-left: auto; border-bottom-right-radius: 2px; transition: background-color 0.8s ease; }
-        .message.bot { background-color: var(--ui-bg-color); color: var(--text-color); margin-right: auto; border-bottom-left-radius: 2px; transition: background-color 0.8s ease; }
+        .message.bot { background-color: var(--ui-bg-color); color: var(--text-color); margin-right: auto; border-bottom-left-radius: 2px; transition: background-color 0.8s ease, color 0.8s ease; }
         .input-area { display: flex; gap: 10px; }
         #user-input { flex-grow: 1; border: 1px solid var(--ui-border-color); border-radius: 10px; padding: 10px 15px; font-size: 14px; background: var(--ui-bg-color); color: var(--text-color); outline: none; transition: all 0.8s ease; }
         #user-input:focus { box-shadow: 0 0 0 3px var(--accent-color); }
@@ -149,7 +155,7 @@
         .loading-spinner { display: none; margin: 10px auto; width: 24px; height: 24px; border: 3px solid rgba(183, 169, 149, 0.3); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- WATER THEME --- */
+        /* --- THEMES --- */
         .water-theme {
             --body-bg: linear-gradient(170deg, #0d4a7f, #1e88e5, #42a5f5);
             --accent-color: #81d4fa; --text-color: #ffffff;
@@ -164,11 +170,25 @@
         .ripple { position: absolute; border-radius: 50%; background-color: rgba(255, 255, 255, 0.7); transform: scale(0); animation: ripple-effect 0.6s linear; }
         @keyframes ripple-effect { to { transform: scale(4); opacity: 0; } }
         
+        .metal-theme {
+            --body-bg: #2c3e50;
+            --accent-color: #bdc3c7; --text-color: #ecf0f1;
+            --ui-bg-color: rgba(44, 62, 80, 0.5); --ui-border-color: rgba(189, 195, 199, 0.3);
+            --eye-color: #ecf0f1;
+        }
+        .metal-theme::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 1px, transparent 1px, transparent 10px); animation: metal-slide 80s linear infinite; z-index: -1; }
+        @keyframes metal-slide { from { background-position: 0 0; } to { background-position: -400px 400px; } }
+        .metal-theme .action-button { border: 1px solid var(--accent-color); background: linear-gradient(145deg, #59616a, #464e59); border-radius: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
+        .metal-theme .action-button:hover { background: linear-gradient(145deg, #6b737d, #59616a); }
+        .metal-theme .action-button .ripple { display: none; }
+        .metal-theme .message.user { background-color: #34495e; border: 1px solid var(--accent-color); }
+        
         /* --- CHANGELOG MODAL --- */
         .changelog-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
             display: flex; align-items: center; justify-content: center;
             z-index: 1000;
             opacity: 0;
@@ -177,26 +197,47 @@
         }
         .changelog-overlay.visible { opacity: 1; visibility: visible; }
         .changelog-modal {
-            background: #fff;
+            background: var(--ui-bg-color);
+            border: 1px solid var(--ui-border-color);
+            color: var(--text-color);
             padding: 25px;
             border-radius: 15px;
             width: 90%;
-            max-width: 400px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
         }
-        .changelog-modal h2 { margin-top: 0; color: #333; }
-        .changelog-modal ul { list-style: none; padding: 0; text-align: left; }
-        .changelog-modal li { margin-bottom: 10px; color: #555; }
-        .changelog-modal li::before { content: '✨'; margin-right: 10px; }
-        .changelog-modal button {
+        .changelog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--ui-border-color);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .changelog-header h2 { margin: 0; font-size: 22px; }
+        #close-changelog { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color); }
+        .changelog-content { overflow-y: auto; padding-right: 15px; }
+        .changelog-entry { margin-bottom: 25px; }
+        .changelog-entry.hidden { display: none; }
+        .entry-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+        .entry-version { font-size: 18px; font-weight: bold; background: var(--accent-color); color: white; padding: 2px 8px; border-radius: 5px; }
+        .entry-date { font-size: 12px; opacity: 0.8; }
+        .entry-author { font-size: 12px; opacity: 0.8; }
+        .entry-changes { list-style-type: none; padding-left: 10px; margin: 0; }
+        .entry-changes li { margin-bottom: 5px; line-height: 1.5; }
+        .entry-changes li::before { content: '✓'; color: var(--accent-color); margin-right: 10px; font-weight: bold; }
+        #show-more-changelog {
             margin-top: 20px;
             padding: 10px 20px;
-            border: none;
-            background: #c9bba8;
-            color: white;
+            border: 1px solid var(--accent-color);
+            background: none;
+            color: var(--accent-color);
             border-radius: 8px;
             cursor: pointer;
+            display: none; /* Hidden by default */
         }
 
     </style>
@@ -204,18 +245,26 @@
 <body id="page-body" class="default">
     <div class="changelog-overlay" id="changelog-overlay">
         <div class="changelog-modal">
-            <h2>Naya Kya Hai?</h2>
-            <ul>
-                <li>Ab Yeh Ek App Hai! Aap isay 'install' kar sakte hain.</li>
-                <li>Ab yeh offline bhi chalegi! 🚀</li>
-            </ul>
-            <button id="close-changelog">Samajh Gaya!</button>
+            <div class="changelog-header">
+                <h2>Version History 📜</h2>
+                <button id="close-changelog">&times;</button>
+            </div>
+            <div class="changelog-content" id="changelog-content">
+                <!-- Changelog entries will be injected here by JS -->
+            </div>
+            <button id="show-more-changelog">Show More</button>
         </div>
     </div>
 
-    <button id="theme-switcher">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zM0 12C0 5.4 5.4 0 12 0s12 5.4 12 12-5.4 12-12 12S0 18.6 0 12zm12-9a9 9 0 0 0-9 9 9 9 0 0 0 9 9z"/></svg>
-    </button>
+    <div class="top-right-controls">
+        <button class="control-button" id="changelog-button" title="Changelog">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M13,13H16V15H13V13M8,17H16V19H8V17Z" /></svg>
+        </button>
+        <button class="control-button" id="theme-switcher" title="Switch Theme">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zM0 12C0 5.4 5.4 0 12 0s12 5.4 12 12-5.4 12-12 12S0 18.6 0 12zm12-9a9 9 0 0 0-9 9 9 9 0 0 0 9 9z"/></svg>
+        </button>
+    </div>
+
     <div class="character-container" id="character-container">
         <div class="limb arm left"></div>
         <div class="limb arm right"></div>
@@ -296,7 +345,7 @@
         // PAGE THEME SWITCHER LOGIC
         const themeSwitcher = document.getElementById('theme-switcher');
         const pageBody = document.getElementById('page-body');
-        const pageThemes = ['default', 'water-theme'];
+        const pageThemes = ['default', 'water-theme', 'metal-theme'];
         let currentPageThemeIndex = 0;
         themeSwitcher.addEventListener('click', () => {
             pageBody.classList.remove(pageThemes[currentPageThemeIndex]);
@@ -307,28 +356,140 @@
         // RIPPLE EFFECT LOGIC
         document.querySelectorAll('.action-button').forEach(button => {
             button.addEventListener('click', function (e) {
-                const x = e.clientX - e.target.offsetLeft;
-                const y = e.clientY - e.target.offsetTop;
-                const ripples = document.createElement('span');
-                ripples.style.left = x + 'px';
-                ripples.style.top = y + 'px';
-                ripples.classList.add('ripple');
-                this.appendChild(ripples);
-                setTimeout(() => { ripples.remove() }, 600);
+                if (!pageBody.classList.contains('metal-theme')) {
+                    const x = e.clientX - e.target.offsetLeft;
+                    const y = e.clientY - e.target.offsetTop;
+                    const ripples = document.createElement('span');
+                    ripples.style.left = x + 'px';
+                    ripples.style.top = y + 'px';
+                    ripples.classList.add('ripple');
+                    this.appendChild(ripples);
+                    setTimeout(() => { ripples.remove() }, 600);
+                }
             });
         });
 
-        // CHANGELOG LOGIC
+        // --- CHANGELOG LOGIC ---
+        const changelogButton = document.getElementById('changelog-button');
         const changelogOverlay = document.getElementById('changelog-overlay');
         const closeChangelogButton = document.getElementById('close-changelog');
-        const lastVersion = 'pwa-v1'; // Change this for future updates
-        if (localStorage.getItem('seenVersion') !== lastVersion) {
-            changelogOverlay.classList.add('visible');
+        const changelogContent = document.getElementById('changelog-content');
+        const showMoreButton = document.getElementById('show-more-changelog');
+
+        const changelogData = [
+            {
+                version: '1.5.0',
+                date: 'July 15, 2025',
+                author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+                changes: [
+                    'Added a detailed changelog modal with version history.',
+                    'Organized top-right controls for theme and changelog.',
+                    'Implemented "Show More" functionality for long changelogs.',
+                    'Styled the modal to match the current theme.'
+                ]
+            },
+            {
+                version: '1.4.0',
+                date: 'July 14, 2025',
+                author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+                changes: [
+                    'Introduced Water and Metal page themes.',
+                    'Added a theme switcher button.',
+                    'Buttons and UI elements now adapt to the selected theme.'
+                ]
+            },
+            {
+                version: '1.3.0',
+                date: 'July 13, 2025',
+                author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+                changes: [
+                    'Made eyes follow the mouse cursor.',
+                    'Added a "Rang Badlo" button to change BABLi\'s color.',
+                    'Added lips and improved overall facial features.',
+                    'Improved arm and leg design and added a stomach.'
+                ]
+            },
+            {
+                version: '1.2.0',
+                date: 'July 12, 2025',
+                author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+                changes: [
+                    'Converted the website into a Progressive Web App (PWA).',
+                    'Added offline support via a Service Worker.',
+                    'Added a favicon and PWA icons.'
+                ]
+            },
+            {
+                version: '1.1.0',
+                date: 'July 11, 2025',
+                author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+                changes: [
+                    'Integrated Gemini API for interactive chat.',
+                    'Added a chatbox and input field.',
+                    'Implemented "Tell me a story" functionality.'
+                ]
+            },
+            {
+                version: '1.0.0',
+                date: 'July 10, 2025',
+                author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+                changes: [
+                    'Initial release of the 3D Fluffy BABLi character.',
+                    'Created with HTML and CSS.',
+                    'Added floating animation and parallax mouse effect.'
+                ]
+            }
+        ];
+
+        function renderChangelog() {
+            changelogContent.innerHTML = ''; // Clear previous entries
+            changelogData.forEach((entry, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.classList.add('changelog-entry');
+                if (index >= 10) {
+                    entryDiv.classList.add('hidden');
+                }
+
+                const changesHTML = entry.changes.map(change => `<li>${change}</li>`).join('');
+
+                entryDiv.innerHTML = `
+                    <div class="entry-header">
+                        <span class="entry-version">${entry.version}</span>
+                        <span class="entry-date">${entry.date}</span>
+                        <span class="entry-author">by ${entry.author}</span>
+                    </div>
+                    <ul class="entry-changes">${changesHTML}</ul>
+                `;
+                changelogContent.appendChild(entryDiv);
+            });
+
+            if (changelogData.length > 10) {
+                showMoreButton.style.display = 'block';
+            } else {
+                showMoreButton.style.display = 'none';
+            }
         }
+
+        changelogButton.addEventListener('click', () => {
+            changelogOverlay.classList.add('visible');
+        });
         closeChangelogButton.addEventListener('click', () => {
             changelogOverlay.classList.remove('visible');
-            localStorage.setItem('seenVersion', lastVersion);
         });
+        changelogOverlay.addEventListener('click', (e) => {
+            if (e.target === changelogOverlay) {
+                changelogOverlay.classList.remove('visible');
+            }
+        });
+        showMoreButton.addEventListener('click', () => {
+            document.querySelectorAll('.changelog-entry.hidden').forEach(entry => {
+                entry.classList.remove('hidden');
+            });
+            showMoreButton.style.display = 'none';
+        });
+
+        // Initial render
+        renderChangelog();
 
 
         // --- GEMINI API ---
@@ -366,3 +527,4 @@
     </script>
 </body>
 </html>
+�
