@@ -378,9 +378,19 @@
 
         const changelogData = [
             {
+                version: '1.6.0',
+                date: 'July 16, 2025',
+                author: 'Gemini & 〆༯𝙎ค૯𝙀𝘿✘🫀',
+                changes: [
+                    'Refactored API calls to use a secure serverless function.',
+                    'Removed hardcoded API key from the frontend for improved security.',
+                    'App now uses Vercel Environment Variables to store the API key.'
+                ]
+            },
+            {
                 version: '1.5.5',
                 date: 'July 15, 2025',
-                author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+                author: ' ༯𝙎ค૯𝙀𝘿✘?',
                 changes: [
                     'Added a detailed changelog modal with version history.',
                     'Organized top-right controls for theme and changelog.',
@@ -492,36 +502,65 @@
         renderChangelog();
 
 
-        // --- GEMINI API ---
-        const apiKey = "AIzaSyBLyFM6e8yUoyBjBvsgrDtHyLlGOaE_qDI"; 
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        // --- GEMINI API (SECURE) ---
+        // The API URL now points to our own serverless function
+        const apiUrl = '/api/chat'; 
+
         async function getGeminiResponse(prompt) { 
-            loadingSpinner.style.display = 'block'; chatBox.scrollTop = chatBox.scrollHeight;
-            if (apiKey === "YOUR_GEMINI_API_KEY_HERE") { loadingSpinner.style.display = 'none'; return "Please replace 'YOUR_GEMINI_API_KEY_HERE' in the code with your actual Gemini API key."; }
+            loadingSpinner.style.display = 'block'; 
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
             try {
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) { const errorData = await response.json(); console.error("API Error Details:", errorData); throw new Error(`API error (${response.status}): ${errorData.error?.message || 'Unknown error'}`); }
+                // We send the prompt to our own backend, not directly to Google
+                const response = await fetch(apiUrl, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ prompt: prompt }) // Send prompt in the body
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("API Function Error:", errorData);
+                    throw new Error(errorData.error || 'Unknown server error');
+                }
+                
                 const result = await response.json();
-                if (result.candidates && result.candidates.length > 0) { return result.candidates[0].content.parts[0].text; }
-                return "I'm a little Cotton. Api Error!";
-            } catch (error) { console.error("Gemini API Call Failed:", error); return "Oops! Something went wrong."; } 
-            finally { loadingSpinner.style.display = 'none'; }
+                return result.text;
+
+            } catch (error) { 
+                console.error("Frontend Fetch Error:", error); 
+                return `Oops! Something went wrong. (${error.message})`;
+            } 
+            finally { 
+                loadingSpinner.style.display = 'none'; 
+            }
         }
+
         function addMessage(text, sender) {
-            const messageElement = document.createElement('div'); messageElement.classList.add('message', sender); messageElement.textContent = text;
-            chatBox.appendChild(messageElement); chatBox.scrollTop = chatBox.scrollHeight;
+            const messageElement = document.createElement('div'); 
+            messageElement.classList.add('message', sender); 
+            messageElement.textContent = text;
+            chatBox.appendChild(messageElement); 
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
+
         sendButton.addEventListener('click', async () => {
-            const message = userInput.value.trim(); if (!message) return; addMessage(message, 'user'); userInput.value = '';
+            const message = userInput.value.trim(); 
+            if (!message) return; 
+            addMessage(message, 'user'); 
+            userInput.value = '';
             const prompt = `You are BABLi, a cute, Naughty, thariki An very fluffy, and friendly character made of Cotton. A user is talking to you. Be sweet, curious, and keep your answers very short and cute, like a child would speak, Always add Small Love Poetry in end of msg, Use  "Modern Colloquial Urdu"  "Informal Conversational Urdu" Roman Urdu, use lots of Chat releted emojis every whare in chat, i am also babli call me babli to. User's message: "${message}"`;
-            const botResponse = await getGeminiResponse(prompt); addMessage(botResponse, 'bot');
+            const botResponse = await getGeminiResponse(prompt); 
+            addMessage(botResponse, 'bot');
         });
+
         userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendButton.click(); } });
+        
         storyButton.addEventListener('click', async () => {
             addMessage("Apny Bary me Kush Btao!", 'user');
-            const prompt = "You are BABLi, a cute, Naughty, Thariki, very fluffy, and friendly character made of Cotton🌨️. Tell a very short (2-3 sentences), happy, and simple story about Old Pakistan And Babli. Use Modern Colloquial Urdu. Informal Conversational Urdu. Roman Urdu.";
-            const story = await getGeminiResponse(prompt); addMessage(story, 'bot');
+            const prompt = "You are BABLi, a cute, Naughty, Thariki, very fluffy, and friendly character made of Cotton🌨️. Tell a very short (2-3 sentences), happy, and simple story about Babli Daily Life. Use Modern Colloquial Urdu. Informal Conversational Urdu. Roman Urdu.";
+            const story = await getGeminiResponse(prompt); 
+            addMessage(story, 'bot');
         });
 
     </script>
