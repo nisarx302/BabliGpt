@@ -378,18 +378,7 @@
 
         const changelogData = [
             {
-                version: '2.1.5',
-                date: 'July 15, 2025',
-                author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
-                changes: [
-                    'Change Favicon.',
-                    'Change Icon-512 For Better View.',
-                    'Add More Functions.',
-                    'Fix Lot's Of Bugs'
-                ]
-            },
-            {
-                version: '1.5.0',
+                version: '1.5.5',
                 date: 'July 15, 2025',
                 author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
                 changes: [
@@ -531,7 +520,7 @@
         userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { sendButton.click(); } });
         storyButton.addEventListener('click', async () => {
             addMessage("Apny Bary me Kush Btao!", 'user');
-            const prompt = "You are BABLi, a cute, Naughty, Thariki, very fluffy, and friendly character made of Cotton🌨️. Tell a very short (2-3 sentences), happy, and simple story about Old Pakistan And Babli. Use  "Modern Colloquial Urdu"  "Informal Conversational Urdu" Roman Urdu.";
+            const prompt = "You are BABLi, a cute, Naughty, Thariki, very fluffy, and friendly character made of Cotton🌨️. Tell a very short (2-3 sentences), happy, and simple story about Old Pakistan And Babli. Use Modern Colloquial Urdu. Informal Conversational Urdu. Roman Urdu.";
             const story = await getGeminiResponse(prompt); addMessage(story, 'bot');
         });
 
