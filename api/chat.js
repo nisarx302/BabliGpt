@@ -25,10 +25,8 @@ export default async function handler(request) {
       });
     }
 
-    // The Gemini API URL for streaming content
     const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:streamGenerateContent?key=${apiKey}`;
 
-    // Make the call to the Gemini API
     const geminiResponse = await fetch(geminiApiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -37,7 +35,6 @@ export default async function handler(request) {
       }),
     });
 
-    // Check if the API call was successful
     if (!geminiResponse.ok || !geminiResponse.body) {
       const errorBody = await geminiResponse.text();
       console.error('Gemini API Error:', errorBody);
@@ -46,23 +43,32 @@ export default async function handler(request) {
       });
     }
 
-    // Create a new TransformStream to parse the Gemini stream and extract only the text content.
-    // This is a very stable way to handle the streaming JSON data from the API.
+    // A more robust TransformStream to handle the Gemini API's streaming JSON
     const textStream = new TransformStream({
-      transform(chunk, controller) {
+      async transform(chunk, controller) {
+        // The API returns data that might look like "[{...}]" or just "{...},".
+        // This logic handles these cases much more reliably.
         try {
-          // The stream sends data chunks that look like `[ { ...} ]`
-          // We clean up the chunk to make it valid JSON
-          const jsonStr = chunk.replace(/^\[|\]$/g, '').trim();
-          if (jsonStr) {
-            const parsed = JSON.parse(jsonStr);
-            const text = parsed.candidates[0]?.content?.parts[0]?.text;
-            if (text) {
-              controller.enqueue(text); // Send the extracted text to the client
+            // It's common for the stream to send multiple JSON objects in one chunk,
+            // or split a single object across chunks. We need to handle this.
+            const jsonObjects = chunk.split('}\n,').map((s, i, a) => i < a.length - 1 ? s + '}' : s);
+
+            for (const jsonStr of jsonObjects) {
+                if (jsonStr.trim()) {
+                    // Clean up potential array brackets from the start/end of the stream
+                    const cleanedJsonStr = jsonStr.replace(/^\[|\]$/g, '').trim();
+                    if (cleanedJsonStr) {
+                         const parsed = JSON.parse(cleanedJsonStr);
+                         const text = parsed.candidates[0]?.content?.parts[0]?.text;
+                         if (text) {
+                            controller.enqueue(text); // Send only the text to the client
+                         }
+                    }
+                }
             }
-          }
         } catch (e) {
-          // This can happen with incomplete chunks. We just ignore them.
+          // This might happen with incomplete JSON chunks, we can safely ignore and wait for the next chunk.
+          // console.error("Error parsing chunk:", e, "Chunk was:", chunk);
         }
       },
     });
