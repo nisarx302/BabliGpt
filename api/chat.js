@@ -1,12 +1,9 @@
 // This is a Vercel Serverless Function (Edge Function)
-// It supports streaming responses.
-
 export const config = {
   runtime: 'edge',
 };
 
 export default async function handler(request) {
-  // 1. Only allow POST requests
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
       status: 405, headers: { 'Content-Type': 'application/json' },
@@ -14,7 +11,6 @@ export default async function handler(request) {
   }
 
   try {
-    // 2. Get the prompt from the request body
     const { prompt } = await request.json();
     if (!prompt) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -22,7 +18,6 @@ export default async function handler(request) {
       });
     }
 
-    // 3. Get the secret API key from Vercel's Environment Variables
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'API key not configured' }), {
@@ -32,7 +27,6 @@ export default async function handler(request) {
 
     const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:streamGenerateContent?key=${apiKey}`;
 
-    // 4. Call the Gemini API
     const geminiResponse = await fetch(geminiApiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -49,57 +43,44 @@ export default async function handler(request) {
         });
     }
 
-    // 5. Create a new ReadableStream to pipe the response directly and parse the chunks
+    // Create a new ReadableStream to pipe the response and correctly parse Gemini's JSON chunks.
     const stream = new ReadableStream({
         async start(controller) {
             const reader = geminiResponse.body.getReader();
             const decoder = new TextDecoder();
-            let buffer = '';
-
-            function push() {
-                reader.read().then(({ done, value }) => {
-                    if (done) {
-                        controller.close();
-                        return;
-                    }
-                    
-                    buffer += decoder.decode(value, { stream: true });
-                    
-                    // The Gemini streaming API returns data in a specific format.
-                    // It often looks like this: `[ { "candidates": [...] } ]`
-                    // Sometimes chunks are incomplete JSON. We need to handle this.
-                    // A simple and effective way for this specific API is to extract text content.
-                    try {
-                        // The raw response is a stream of JSON objects. We extract the text part.
-                        // This simplified parser assumes the text is the most important part of the stream.
-                        const lines = buffer.split('\n');
-                        buffer = lines.pop(); // Keep the last, possibly incomplete, line for the next chunk
-
-                        for (const line of lines) {
-                           if (line.includes('"text"')) {
-                                // Super simplified: just find the text field and extract its value.
-                                // A more robust solution would parse the JSON properly.
-                                const match = /"text"\s*:\s*"([^"]*)"/.exec(line);
-                                if (match && match[1]) {
-                                    // The API might send escape characters, let's decode them.
-                                    const decodedText = JSON.parse(`"${match[1]}"`);
-                                    controller.enqueue(decodedText);
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        // console.warn('JSON parsing error in stream, continuing...', e);
-                        // This can happen with incomplete JSON, we just wait for more data.
-                    }
-                    
-                    push();
-                }).catch(err => {
-                    console.error('Stream reading error:', err);
-                    controller.error(err);
-                });
-            }
             
-            push();
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    // The response is a stream of JSON objects, sometimes wrapped in an array `[ ... ]`
+                    // We need to clean it up to parse it reliably.
+                    const jsonObjects = chunk.replace(/^\[|\]$/g, '').split('},').map((s, i, arr) => {
+                        return s + (i < arr.length - 1 ? '}' : '');
+                    });
+
+                    for (const jsonObjStr of jsonObjects) {
+                        if (jsonObjStr.trim() === '') continue;
+                        try {
+                            const parsed = JSON.parse(jsonObjStr);
+                            const text = parsed.candidates[0]?.content?.parts[0]?.text;
+                            if (text) {
+                                controller.enqueue(text);
+                            }
+                        } catch (e) {
+                            // Ignore incomplete JSON chunks, they will be completed in the next read.
+                            // console.warn('Skipping incomplete JSON chunk:', jsonObjStr);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Error while reading stream:', err);
+                controller.error(err);
+            } finally {
+                controller.close();
+            }
         }
     });
 
