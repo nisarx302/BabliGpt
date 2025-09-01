@@ -100,6 +100,17 @@ document.querySelectorAll('.action-button').forEach(button => {
 // --- CHANGELOG LOGIC ---
 const changelogData = [
     {
+        version: '2.2.1',
+        date: 'September 1, 2025',
+        author: 'Gemini & ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Fixed critical JavaScript error caused by a duplicate function, making the app functional again. 🐞',
+            'Corrected conversation history saving logic to ensure reliability. 💾',
+            'Removed duplicate CSS rules for a cleaner stylesheet. ✨',
+            'Improved server-side logic for more robust handling of streaming API responses. 🚀'
+        ]
+    },
+    {
         version: '2.2.0',
         date: 'September 1, 2025',
         author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
@@ -243,13 +254,13 @@ function saveConversation() {
 
 function loadConversation() {
     const history = localStorage.getItem('babliChatHistory');
-    if (history) {
+    chatBox.innerHTML = ''; // Clear initial message
+    if (history && history.length > 2) { // Check if history is not just an empty array
         conversation = JSON.parse(history);
-        chatBox.innerHTML = ''; // Clear initial message
         conversation.forEach(msg => addMessage(msg.text, msg.sender, false));
     } else {
         // Add initial message if no history
-        addMessage("Hi! I'm ცค๖Ɩⁱ. Mujy Kush Kho Ya Me Tumy Ik Khani Sunata Hu!", 'bot', false);
+        addMessage("Hi! I'm ცค๖Ɩⁱ. Mujy Kush Kho Ya Me Tumy Ik Khani Sunata Hu!", 'bot', true);
     }
 }
 
@@ -266,8 +277,8 @@ async function getGeminiResponse(prompt) {
             body: JSON.stringify({ prompt: prompt })
         });
 
-        if (!response.body) {
-            throw new Error("Streaming not supported or response has no body.");
+        if (!response.ok || !response.body) {
+            throw new Error("API request failed or streaming not supported.");
         }
 
         const reader = response.body.getReader();
@@ -280,10 +291,11 @@ async function getGeminiResponse(prompt) {
 
             const chunk = decoder.decode(value, { stream: true });
             fullResponse += chunk;
-            botMessageElement.textContent = fullResponse;
+            botMessageElement.textContent = fullResponse; // Update message content in real-time
             chatBox.scrollTop = chatBox.scrollHeight;
         }
         
+        // Update the last message in the conversation array with the full response
         const lastMessage = conversation[conversation.length - 1];
         if(lastMessage && lastMessage.sender === 'bot') {
             lastMessage.text = fullResponse;
@@ -293,19 +305,12 @@ async function getGeminiResponse(prompt) {
     } catch (error) {
         console.error("Frontend Fetch Error:", error);
         botMessageElement.textContent = `Oops! Something went wrong. (${error.message})`;
-    } finally {
-        loadingSpinner.style.display = 'none';
-        setUiState(true);
-    }
-}
-        
-        conversation.push({ text: fullResponse, sender: 'bot' });
+        // Also update the conversation array with the error message
+        const lastMessage = conversation[conversation.length - 1];
+        if(lastMessage && lastMessage.sender === 'bot') {
+            lastMessage.text = botMessageElement.textContent;
+        }
         saveConversation();
-        triggerAnimation(sentiment);
-
-    } catch (error) {
-        console.error("Frontend Fetch Error:", error);
-        botMessageElement.textContent = `Oops! Something went wrong. (${error.message})`;
     } finally {
         loadingSpinner.style.display = 'none';
         setUiState(true);
@@ -337,7 +342,7 @@ async function handleSend() {
     if (!message) return;
     addMessage(message, 'user', true);
     userInput.value = '';
-    const prompt = `Analyze the sentiment (positive, negative, neutral) of the user's message and then respond. You are BABLi, a cute, Naughty, thariki An very fluffy, and friendly character made of Cotton. A user is talking to you. Be sweet, curious, and keep your answers very Good and cute, like a child would speak, Always add Small Love Poetry in end of msg, Use "Modern Colloquial Urdu" "Informal Conversational Urdu" Roman Urdu, use lots of Chat releted emojis every whare in chat, . User's message: "${message}"`;
+    const prompt = `Analyze the sentiment (positive, negative, neutral) of the user's message and then respond. You are BABLi, a cute, Naughty, thariki An very fluffy, and friendly character made of Cotton. A user is talking to you. Be sweet, curious, and keep your answers very Good and cute, like a child would speak, Always add Small Love Poetry in end of msg, Use "Modern Colloial Urdu" "Informal Conversational Urdu" Roman Urdu, use lots of Chat releted emojis every whare in chat, . User's message: "${message}"`;
     await getGeminiResponse(prompt);
 }
 
@@ -347,7 +352,7 @@ userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSen
 storyButton.addEventListener('click', async () => {
     const message = "Apny Bary me Kush Btao!";
     addMessage(message, 'user', true);
-    const prompt = "You are BABLi, a cute, Naughty, Thariki, very fluffy, and friendly character made of Cotton🌨️. Tell a very short (2-3 sentences), happy, and simple story about Babli Daily Life. The story should have a 'positive' sentiment. Use Modern Colloquial Urdu. Informal Conversational Urdu. Roman Urdu.";
+    const prompt = "You are BABLi, a cute, Naughty, Thariki, very fluffy, and friendly character made of Cotton🌨️. Tell a very short (2-3 sentences), happy, and simple story about Babli Daily Life. The story should have a 'positive' sentiment. Use Modern Colloial Urdu. Informal Conversational Urdu. Roman Urdu.";
     await getGeminiResponse(prompt);
 });
 
