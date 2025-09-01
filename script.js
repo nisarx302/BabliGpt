@@ -1,4 +1,3 @@
-
 /*
   script.js
   For BabliGpt Project
@@ -83,6 +82,15 @@ themeSwitcher.addEventListener('click', () => {
 
 // --- CHANGELOG LOGIC ---
 const changelogData = [
+    {
+        version: '2.5.1',
+        date: 'September 1, 2025',
+        author: 'Gemini & ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Implemented a much more robust server-side stream parser to finally resolve the "API request failed" error. 💪',
+            'Slightly improved client-side error message handling in the chat history. 🛠️'
+        ]
+    },
     {
         version: '2.5.0',
         date: 'September 1, 2025',
@@ -303,25 +311,28 @@ async function getGeminiResponse(prompt) {
             const { done, value } = await reader.read();
             if (done) break;
             
-            // This is a simpler and more direct way to get the text
             const chunk = decoder.decode(value);
             fullResponse += chunk;
             botMessageElement.textContent = fullResponse;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
         
-        const lastMessage = conversation.find(msg => msg.text === '' && msg.sender === 'bot');
-        if (lastMessage) {
+        // Find the placeholder message and update it
+        const lastMessage = conversation[conversation.length - 1];
+        if (lastMessage && lastMessage.sender === 'bot') {
             lastMessage.text = fullResponse;
         }
         saveConversation();
 
     } catch (error) {
         console.error("Frontend Fetch Error:", error);
-        botMessageElement.textContent = `Oops! Something went wrong. (${error.message})`;
-        const lastMessage = conversation.find(msg => msg.text === '' && msg.sender === 'bot');
-        if (lastMessage) {
-            lastMessage.text = botMessageElement.textContent;
+        const errorMessage = `Oops! Something went wrong. (${error.message})`;
+        botMessageElement.textContent = errorMessage;
+        
+        // Find the placeholder message and update it with the error
+        const lastMessage = conversation[conversation.length - 1];
+        if (lastMessage && lastMessage.sender === 'bot') {
+            lastMessage.text = errorMessage;
         }
         saveConversation();
     } finally {
@@ -381,6 +392,3 @@ document.addEventListener('DOMContentLoaded', () => {
     renderChangelog();
     loadConversation();
 });
-
-
-
