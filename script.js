@@ -32,7 +32,7 @@ const changelogOverlay = document.getElementById('changelog-overlay');
 const closeChangelogButton = document.getElementById('close-changelog');
 const changelogContent = document.getElementById('changelog-content');
 const showMoreButton = document.getElementById('show-more-changelog');
-const clearChatButton = document.getElementById('clear-chat-button'); // New Button
+const clearChatButton = document.getElementById('clear-chat-button');
 
 // --- 3D & EYE LOGIC ---
 document.body.addEventListener('mousemove', (e) => {
@@ -83,6 +83,15 @@ themeSwitcher.addEventListener('click', () => {
 // --- CHANGELOG LOGIC ---
 const changelogData = [
     {
+        version: '2.3.1',
+        date: 'September 1, 2025',
+        author: 'Gemini & ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Fixed critical API error with a more robust server-side streaming logic. 🚀',
+            'Restored the full changelog data that was accidentally removed. 📜'
+        ]
+    },
+    {
         version: '2.3.0',
         date: 'September 1, 2025',
         author: 'Gemini & ༯𝙎ค૯𝙀𝘿✘🫀',
@@ -104,7 +113,111 @@ const changelogData = [
             'Improved server-side logic for more robust handling of streaming API responses. 🚀'
         ]
     },
-    // ... all other changelog entries
+    {
+        version: '2.2.0',
+        date: 'September 1, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Implemented real-time streaming for bot responses.',
+            'Added conversation history using LocalStorage.',
+            'Refactored code into separate CSS and JS files for better organization.',
+            'Introduced a new "Space" theme 🌌.',
+            'Added sentiment-based animations for BABLi (happy/sad reactions).'
+        ]
+    },
+    {
+        version: '2.1.0',
+        date: 'September 1, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Fixed the chatbot reply streaming issue.',
+            'Increased the chatbox height for a better user experience.',
+            'Added extensive older version history to the changelog.',
+            'Temporarily disabled sentiment animations to improve chat stability.'
+        ]
+    },
+    {
+        version: '2.0.0',
+        date: 'August 31, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Implemented real-time streaming for bot responses.',
+            'Added conversation history using LocalStorage.',
+            'Refactored code into separate CSS and JS files for better organization.',
+            'Introduced a new "Space" theme 🌌.',
+            'Added sentiment-based animations for BABLi (happy/sad reactions).'
+        ]
+    },
+    {
+        version: '1.6.0',
+        date: 'July 16, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Refactored API calls to use a secure serverless function.',
+            'Removed hardcoded API key from the frontend for improved security.',
+            'App now uses Vercel Environment Variables to store the API key.'
+        ]
+    },
+    {
+        version: '1.5.5',
+        date: 'July 15, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Added a detailed changelog modal with version history.',
+            'Organized top-right controls for theme and changelog.',
+            'Implemented "Show More" functionality for long changelogs.'
+        ]
+    },
+    {
+        version: '1.4.0',
+        date: 'July 14, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Introduced Water and Metal page themes.',
+            'Added a theme switcher button.',
+            'Buttons and UI elements now adapt to the selected theme.'
+        ]
+    },
+    {
+        version: '1.3.0',
+        date: 'July 13, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Made eyes follow the mouse cursor.',
+            'Added a "Rang Badlo" button to change BABLi\'s color.',
+            'Added lips and improved overall facial features.'
+        ]
+    },
+    {
+        version: '1.2.0',
+        date: 'July 12, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Converted the website into a Progressive Web App (PWA).',
+            'Added offline support via a Service Worker.',
+            'Added a favicon and PWA icons.'
+        ]
+    },
+    {
+        version: '1.1.0',
+        date: 'July 11, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Integrated Gemini API for interactive chat.',
+            'Added a chatbox and input field.',
+            'Implemented "Tell me a story" functionality.'
+        ]
+    },
+    {
+        version: '1.0.0',
+        date: 'July 10, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Initial release of the 3D Fluffy BABLi character.',
+            'Created with HTML and CSS.',
+            'Added floating animation and parallax mouse effect.'
+        ]
+    }
 ];
 
 function renderChangelog() {
@@ -229,12 +342,11 @@ storyButton.addEventListener('click', async () => {
     await getGeminiResponse(prompt);
 });
 
-// --- NEW: CLEAR CHAT BUTTON LOGIC ---
 clearChatButton.addEventListener('click', () => {
     if (confirm('Are you sure you want to clear the entire chat history? This cannot be undone.')) {
         conversation = [];
         localStorage.removeItem('babliChatHistory');
-        loadConversation(); // This will clear the box and show the welcome message
+        loadConversation();
     }
 });
 
