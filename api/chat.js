@@ -43,35 +43,37 @@ export default async function handler(request) {
         });
     }
 
-    // Create a new ReadableStream to pipe the response and correctly parse Gemini's JSON chunks.
+    // A more robust ReadableStream to handle Gemini's response.
     const stream = new ReadableStream({
         async start(controller) {
             const reader = geminiResponse.body.getReader();
             const decoder = new TextDecoder();
-            
+            let incompleteChunk = '';
+
             try {
                 while (true) {
                     const { done, value } = await reader.read();
-                    if (done) break;
+                    if (done) {
+                        break;
+                    }
+                    // Prepend any incomplete chunk from the previous read
+                    const chunkText = incompleteChunk + decoder.decode(value, { stream: true });
+                    const lines = chunkText.split('\n');
+                    
+                    // The last line might be incomplete, so we save it for the next iteration.
+                    incompleteChunk = lines.pop();
 
-                    const chunk = decoder.decode(value, { stream: true });
-                    // The response is a stream of JSON objects, sometimes wrapped in an array `[ ... ]`
-                    // We need to clean it up to parse it reliably.
-                    const jsonObjects = chunk.replace(/^\[|\]$/g, '').split('},').map((s, i, arr) => {
-                        return s + (i < arr.length - 1 ? '}' : '');
-                    });
-
-                    for (const jsonObjStr of jsonObjects) {
-                        if (jsonObjStr.trim() === '') continue;
-                        try {
-                            const parsed = JSON.parse(jsonObjStr);
-                            const text = parsed.candidates[0]?.content?.parts[0]?.text;
-                            if (text) {
-                                controller.enqueue(text);
+                    for (const line of lines) {
+                        if (line.trim().startsWith('"text"')) {
+                            try {
+                                // Extract the value of the "text" field
+                                const textContent = line.replace(/"text":\s*"/, '').replace(/",?$/, '');
+                                // The text might contain escaped characters (like \n), so we parse it as a JSON string.
+                                const parsedText = JSON.parse(`"${textContent}"`);
+                                controller.enqueue(parsedText);
+                            } catch (e) {
+                                // Ignore lines that can't be parsed
                             }
-                        } catch (e) {
-                            // Ignore incomplete JSON chunks, they will be completed in the next read.
-                            // console.warn('Skipping incomplete JSON chunk:', jsonObjStr);
                         }
                     }
                 }
