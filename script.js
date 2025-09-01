@@ -1,7 +1,7 @@
 /*
   script.js
-  For BABLi Project
-  Author: 〆༯𝙎ค૯𝙀𝘿✘🫀 & Gemini
+  For BabliGpt Project
+  Author: ༯𝙎ค૯𝙀𝘿✘🫀
 */
 
 // --- PWA SERVICE WORKER REGISTRATION ---
@@ -73,7 +73,7 @@ colorButton.addEventListener('click', () => {
 });
 
 // PAGE THEME SWITCHER
-const pageThemes = ['default', 'water-theme', 'metal-theme', 'space-theme'];
+const pageThemes = ['default', 'metal-theme', 'space-theme'];
 let currentPageThemeIndex = 0;
 themeSwitcher.addEventListener('click', () => {
     pageBody.classList.remove(pageThemes[currentPageThemeIndex]);
@@ -100,9 +100,32 @@ document.querySelectorAll('.action-button').forEach(button => {
 // --- CHANGELOG LOGIC ---
 const changelogData = [
     {
+        version: '2.2.0',
+        date: 'September 1, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Implemented real-time streaming for bot responses.',
+            'Added conversation history using LocalStorage.',
+            'Refactored code into separate CSS and JS files for better organization.',
+            'Introduced a new "Space" theme 🌌.',
+            'Added sentiment-based animations for BABLi (happy/sad reactions).'
+        ]
+    },
+    {
+        version: '2.1.0',
+        date: 'September 1, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Fixed the chatbot reply streaming issue.',
+            'Increased the chatbox height for a better user experience.',
+            'Added extensive older version history to the changelog.',
+            'Temporarily disabled sentiment animations to improve chat stability.'
+        ]
+    },
+    {
         version: '2.0.0',
         date: 'August 31, 2025',
-        author: 'Gemini & 〆༯𝙎ค૯𝙀𝘿✘🫀',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
         changes: [
             'Implemented real-time streaming for bot responses.',
             'Added conversation history using LocalStorage.',
@@ -114,14 +137,73 @@ const changelogData = [
     {
         version: '1.6.0',
         date: 'July 16, 2025',
-        author: 'Gemini & 〆༯𝙎ค૯𝙀𝘿✘🫀',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
         changes: [
             'Refactored API calls to use a secure serverless function.',
             'Removed hardcoded API key from the frontend for improved security.',
             'App now uses Vercel Environment Variables to store the API key.'
         ]
     },
-    // ... (rest of the changelogData array from index.html)
+    {
+        version: '1.5.5',
+        date: 'July 15, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Added a detailed changelog modal with version history.',
+            'Organized top-right controls for theme and changelog.',
+            'Implemented "Show More" functionality for long changelogs.'
+        ]
+    },
+    {
+        version: '1.4.0',
+        date: 'July 14, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Introduced Water and Metal page themes.',
+            'Added a theme switcher button.',
+            'Buttons and UI elements now adapt to the selected theme.'
+        ]
+    },
+    {
+        version: '1.3.0',
+        date: 'July 13, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Made eyes follow the mouse cursor.',
+            'Added a "Rang Badlo" button to change BABLi\'s color.',
+            'Added lips and improved overall facial features.'
+        ]
+    },
+    {
+        version: '1.2.0',
+        date: 'July 12, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Converted the website into a Progressive Web App (PWA).',
+            'Added offline support via a Service Worker.',
+            'Added a favicon and PWA icons.'
+        ]
+    },
+    {
+        version: '1.1.0',
+        date: 'July 11, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Integrated Gemini API for interactive chat.',
+            'Added a chatbox and input field.',
+            'Implemented "Tell me a story" functionality.'
+        ]
+    },
+    {
+        version: '1.0.0',
+        date: 'July 10, 2025',
+        author: ' ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Initial release of the 3D Fluffy BABLi character.',
+            'Created with HTML and CSS.',
+            'Added floating animation and parallax mouse effect.'
+        ]
+    }
 ];
 
 function renderChangelog() {
@@ -175,7 +257,7 @@ async function getGeminiResponse(prompt) {
     loadingSpinner.style.display = 'block';
     setUiState(false);
 
-    const botMessageElement = addMessage('', 'bot', true); // Add an empty bot message container
+    const botMessageElement = addMessage('', 'bot', true); 
     
     try {
         const response = await fetch(apiUrl, {
@@ -191,36 +273,31 @@ async function getGeminiResponse(prompt) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullResponse = "";
-        let sentiment = "neutral";
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
-            
-            lines.forEach(line => {
-                if (line.startsWith('data: ')) {
-                    const jsonStr = line.substring(6);
-                    if (jsonStr) {
-                        try {
-                            const parsed = JSON.parse(jsonStr);
-                            if (parsed.sentiment) {
-                                sentiment = parsed.sentiment;
-                            }
-                            if (parsed.text) {
-                                fullResponse += parsed.text;
-                                botMessageElement.textContent = fullResponse;
-                                chatBox.scrollTop = chatBox.scrollHeight;
-                            }
-                        } catch (e) {
-                            // Ignore JSON parsing errors for incomplete chunks
-                        }
-                    }
-                }
-            });
+            fullResponse += chunk;
+            botMessageElement.textContent = fullResponse;
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
+        
+        const lastMessage = conversation[conversation.length - 1];
+        if(lastMessage && lastMessage.sender === 'bot') {
+            lastMessage.text = fullResponse;
+        }
+        saveConversation();
+
+    } catch (error) {
+        console.error("Frontend Fetch Error:", error);
+        botMessageElement.textContent = `Oops! Something went wrong. (${error.message})`;
+    } finally {
+        loadingSpinner.style.display = 'none';
+        setUiState(true);
+    }
+}
         
         conversation.push({ text: fullResponse, sender: 'bot' });
         saveConversation();
@@ -260,7 +337,7 @@ async function handleSend() {
     if (!message) return;
     addMessage(message, 'user', true);
     userInput.value = '';
-    const prompt = `Analyze the sentiment (positive, negative, neutral) of the user's message and then respond. You are BABLi, a cute, Naughty, thariki An very fluffy, and friendly character made of Cotton. A user is talking to you. Be sweet, curious, and keep your answers very short and cute, like a child would speak, Always add Small Love Poetry in end of msg, Use "Modern Colloquial Urdu" "Informal Conversational Urdu" Roman Urdu, use lots of Chat releted emojis every whare in chat, i am also babli call me babli to. User's message: "${message}"`;
+    const prompt = `Analyze the sentiment (positive, negative, neutral) of the user's message and then respond. You are BABLi, a cute, Naughty, thariki An very fluffy, and friendly character made of Cotton. A user is talking to you. Be sweet, curious, and keep your answers very Good and cute, like a child would speak, Always add Small Love Poetry in end of msg, Use "Modern Colloquial Urdu" "Informal Conversational Urdu" Roman Urdu, use lots of Chat releted emojis every whare in chat, . User's message: "${message}"`;
     await getGeminiResponse(prompt);
 }
 
