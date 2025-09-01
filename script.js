@@ -1,3 +1,4 @@
+
 /*
   script.js
   For BabliGpt Project
@@ -83,6 +84,16 @@ themeSwitcher.addEventListener('click', () => {
 // --- CHANGELOG LOGIC ---
 const changelogData = [
     {
+        version: '2.5.0',
+        date: 'September 1, 2025',
+        author: 'Gemini & ༯𝙎ค૯𝙀𝘿✘🫀',
+        changes: [
+            'Re-wrote the server-side and client-side streaming logic to be more robust and finally fix the API error.  안정성!',
+            'Restored Babli\'s arms and legs on the mobile view. 😂',
+            'Reduced the size of the changelog modal on mobile for a better user experience. 📱'
+        ]
+    },
+    {
         version: '2.4.0',
         date: 'September 1, 2025',
         author: 'Gemini & ༯𝙎ค૯𝙀𝘿✘🫀',
@@ -107,10 +118,9 @@ const changelogData = [
         date: 'September 1, 2025',
         author: 'Gemini & ༯𝙎ค૯𝙀𝘿✘🫀',
         changes: [
-            'Fixed critical JavaScript error caused by a duplicate function, making the app functional again. 🐞',
-            'Corrected conversation history saving logic to ensure reliability. 💾',
-            'Removed duplicate CSS rules for a cleaner stylesheet. ✨',
-            'Improved server-side logic for more robust handling of streaming API responses. 🚀'
+            'Fixed critical JavaScript error caused by a duplicate function. 🐞',
+            'Corrected conversation history saving logic. 💾',
+            'Removed duplicate CSS rules. ✨'
         ]
     },
     {
@@ -222,7 +232,7 @@ const changelogData = [
 
 function renderChangelog() {
     changelogContent.innerHTML = '';
-    const displayCount = 10;
+    const displayCount = 5; // Show 5 entries by default
     changelogData.forEach((entry, index) => {
         const entryDiv = document.createElement('div');
         entryDiv.classList.add('changelog-entry');
@@ -264,7 +274,6 @@ function loadConversation() {
         conversation = JSON.parse(history);
         conversation.forEach(msg => addMessage(msg.text, msg.sender, false));
     } else {
-        // Start with an empty conversation array and add the welcome message
         conversation = [];
         addMessage("Hi! I'm ცค๖Ɩⁱ. Mujy Kush Kho Ya Me Tumy Ik Khani Sunata Hu!", 'bot', true);
     }
@@ -274,37 +283,53 @@ async function getGeminiResponse(prompt) {
     loadingSpinner.style.display = 'block';
     setUiState(false);
     const botMessageElement = addMessage('', 'bot', true); 
+    
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt: prompt })
         });
-        if (!response.ok || !response.body) { throw new Error("API request failed or streaming not supported."); }
+
+        if (!response.ok || !response.body) {
+            throw new Error("API request failed or streaming not supported.");
+        }
+
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullResponse = "";
+
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            fullResponse += decoder.decode(value, { stream: true });
+            
+            // This is a simpler and more direct way to get the text
+            const chunk = decoder.decode(value);
+            fullResponse += chunk;
             botMessageElement.textContent = fullResponse;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
-        const lastMessage = conversation[conversation.length - 1];
-        if(lastMessage && lastMessage.sender === 'bot') { lastMessage.text = fullResponse; }
+        
+        const lastMessage = conversation.find(msg => msg.text === '' && msg.sender === 'bot');
+        if (lastMessage) {
+            lastMessage.text = fullResponse;
+        }
         saveConversation();
+
     } catch (error) {
         console.error("Frontend Fetch Error:", error);
         botMessageElement.textContent = `Oops! Something went wrong. (${error.message})`;
-        const lastMessage = conversation[conversation.length - 1];
-        if(lastMessage && lastMessage.sender === 'bot') { lastMessage.text = botMessageElement.textContent; }
+        const lastMessage = conversation.find(msg => msg.text === '' && msg.sender === 'bot');
+        if (lastMessage) {
+            lastMessage.text = botMessageElement.textContent;
+        }
         saveConversation();
     } finally {
         loadingSpinner.style.display = 'none';
         setUiState(true);
     }
 }
+
 
 function addMessage(text, sender, isNew) {
     const messageElement = document.createElement('div');
@@ -313,17 +338,7 @@ function addMessage(text, sender, isNew) {
     chatBox.appendChild(messageElement);
     chatBox.scrollTop = chatBox.scrollHeight;
     if (isNew) {
-        // To prevent duplicate welcome messages, only add to conversation if it's not the initial bot message
-        if (!(sender === 'bot' && conversation.length === 0)) {
-            const existingMessageIndex = conversation.findIndex(msg => msg.text === '' && msg.sender === 'bot');
-            if (existingMessageIndex !== -1) {
-                conversation[existingMessageIndex] = { text, sender };
-            } else {
-                conversation.push({ text, sender });
-            }
-        } else if (conversation.length === 0) {
-             conversation.push({ text, sender });
-        }
+        conversation.push({ text, sender });
         saveConversation();
     }
     return messageElement;
@@ -366,3 +381,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderChangelog();
     loadConversation();
 });
+
+
+

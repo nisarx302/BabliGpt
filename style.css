@@ -229,11 +229,21 @@ body {
     .lips { top: 55px; width: 15px; height: 8px; border-width: 2px; }
     .name { font-size: 14px; }
     .stomach { width: 60px; height: 50px; bottom: 15px; }
-    .limb { display: none; } /* Hide limbs on mobile for a cleaner look */
-
+    .arm { width: 25px; height: 40px; bottom: 50px; }
+    .leg { width: 30px; height: 30px; bottom: -5px; }
+    
     .chat-ui {
         width: 100%;
         padding-bottom: 10px;
         box-sizing: border-box;
+    }
+
+    /* Make Changelog smaller on mobile */
+    .changelog-modal {
+        padding: 15px;
+        max-height: 70vh;
+    }
+    .changelog-header h2 {
+        font-size: 18px;
     }
 }
