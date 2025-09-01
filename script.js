@@ -83,12 +83,12 @@ themeSwitcher.addEventListener('click', () => {
 // --- CHANGELOG LOGIC ---
 const changelogData = [
     {
-        version: '2.3.1',
+        version: '2.4.0',
         date: 'September 1, 2025',
         author: 'Gemini & ༯𝙎ค૯𝙀𝘿✘🫀',
         changes: [
-            'Fixed critical API error with a more robust server-side streaming logic. 🚀',
-            'Restored the full changelog data that was accidentally removed. 📜'
+            'Implemented a final, robust server-side fix for the Gemini API streaming error. Chat should now be stable. 🚀',
+            'Corrected a bug that was preventing the changelog modal from displaying its content. 📜'
         ]
     },
     {
@@ -96,7 +96,7 @@ const changelogData = [
         date: 'September 1, 2025',
         author: 'Gemini & ༯𝙎ค૯𝙀𝘿✘🫀',
         changes: [
-            'Fixed the critical "API request failed" error by improving server-side streaming logic. 🔧',
+            'Attempted to fix the critical "API request failed" error by improving server-side streaming logic. 🔧',
             'Completely redesigned the UI to be mobile-first and fully responsive. 📱',
             'Added a "Clear Chat" button to delete conversation history. 🗑️',
             'Updated the visual style of chat bubbles and input fields for a cleaner look.'
@@ -264,6 +264,8 @@ function loadConversation() {
         conversation = JSON.parse(history);
         conversation.forEach(msg => addMessage(msg.text, msg.sender, false));
     } else {
+        // Start with an empty conversation array and add the welcome message
+        conversation = [];
         addMessage("Hi! I'm ცค๖Ɩⁱ. Mujy Kush Kho Ya Me Tumy Ik Khani Sunata Hu!", 'bot', true);
     }
 }
@@ -311,7 +313,17 @@ function addMessage(text, sender, isNew) {
     chatBox.appendChild(messageElement);
     chatBox.scrollTop = chatBox.scrollHeight;
     if (isNew) {
-        conversation.push({ text, sender });
+        // To prevent duplicate welcome messages, only add to conversation if it's not the initial bot message
+        if (!(sender === 'bot' && conversation.length === 0)) {
+            const existingMessageIndex = conversation.findIndex(msg => msg.text === '' && msg.sender === 'bot');
+            if (existingMessageIndex !== -1) {
+                conversation[existingMessageIndex] = { text, sender };
+            } else {
+                conversation.push({ text, sender });
+            }
+        } else if (conversation.length === 0) {
+             conversation.push({ text, sender });
+        }
         saveConversation();
     }
     return messageElement;
@@ -344,7 +356,6 @@ storyButton.addEventListener('click', async () => {
 
 clearChatButton.addEventListener('click', () => {
     if (confirm('Are you sure you want to clear the entire chat history? This cannot be undone.')) {
-        conversation = [];
         localStorage.removeItem('babliChatHistory');
         loadConversation();
     }

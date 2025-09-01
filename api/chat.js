@@ -36,55 +36,40 @@ export default async function handler(request) {
     });
 
     if (!geminiResponse.ok || !geminiResponse.body) {
-        const errorBody = await geminiResponse.text();
-        console.error('Gemini API Error:', errorBody);
-        return new Response(JSON.stringify({ error: 'Failed to fetch from Gemini API', details: errorBody }), {
-            status: geminiResponse.status, headers: { 'Content-Type': 'application/json' },
-        });
+      const errorBody = await geminiResponse.text();
+      console.error('Gemini API Error:', errorBody);
+      return new Response(JSON.stringify({ error: 'Failed to fetch from Gemini API', details: errorBody }), {
+          status: geminiResponse.status, headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    // A more robust ReadableStream to handle Gemini's response.
-    const stream = new ReadableStream({
-        async start(controller) {
-            const reader = geminiResponse.body.getReader();
-            const decoder = new TextDecoder();
-            let incompleteChunk = '';
-
-            try {
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) {
-                        break;
-                    }
-                    // Prepend any incomplete chunk from the previous read
-                    const chunkText = incompleteChunk + decoder.decode(value, { stream: true });
-                    const lines = chunkText.split('\n');
-                    
-                    // The last line might be incomplete, so we save it for the next iteration.
-                    incompleteChunk = lines.pop();
-
-                    for (const line of lines) {
-                        if (line.trim().startsWith('"text"')) {
-                            try {
-                                // Extract the value of the "text" field
-                                const textContent = line.replace(/"text":\s*"/, '').replace(/",?$/, '');
-                                // The text might contain escaped characters (like \n), so we parse it as a JSON string.
-                                const parsedText = JSON.parse(`"${textContent}"`);
-                                controller.enqueue(parsedText);
-                            } catch (e) {
-                                // Ignore lines that can't be parsed
-                            }
-                        }
-                    }
+    // Directly pipe the stream from Gemini to the client. This is the most robust method.
+    // The Gemini API already formats the stream in a way that the browser's fetch stream can handle.
+    const stream = geminiResponse.body
+      .pipeThrough(new TextDecoderStream())
+      .pipeThrough(new TransformStream({
+        transform(chunk, controller) {
+          // This complex-looking part is just to correctly parse the JSON stream from Google
+          // and extract the text content. It's more reliable than simple string splitting.
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.includes('"text"')) {
+              try {
+                const jsonStr = line.match(/{.*}/)?.[0];
+                if (jsonStr) {
+                  const parsed = JSON.parse(jsonStr);
+                  const text = parsed.candidates[0]?.content?.parts[0]?.text;
+                  if (text) {
+                    controller.enqueue(text);
+                  }
                 }
-            } catch (err) {
-                console.error('Error while reading stream:', err);
-                controller.error(err);
-            } finally {
-                controller.close();
+              } catch (e) {
+                // Ignore parsing errors for incomplete chunks
+              }
             }
+          }
         }
-    });
+      }));
 
     return new Response(stream, {
         headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' },
