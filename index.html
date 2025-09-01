@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Chat with 3D Fluffy BABLi</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f0e8d9">
@@ -10,51 +10,54 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="page-body" class="default">
+
     <div class="changelog-overlay" id="changelog-overlay">
         <div class="changelog-modal">
             <div class="changelog-header">
                 <h2>Version History 📜</h2>
                 <button id="close-changelog">&times;</button>
             </div>
-            <div class="changelog-content" id="changelog-content">
-                </div>
+            <div class="changelog-content" id="changelog-content"></div>
             <button id="show-more-changelog">Show More</button>
         </div>
     </div>
 
-    <div class="top-right-controls">
-        <button class="control-button" id="changelog-button" title="Changelog">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M13,13H16V15H13V13M8,17H16V19H8V17Z" /></svg>
-        </button>
-        <button class="control-button" id="theme-switcher" title="Switch Theme">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zM0 12C0 5.4 5.4 0 12 0s12 5.4 12 12-5.4 12-12 12S0 18.6 0 12zm12-9a9 9 0 0 0-9 9 9 9 0 0 0 9 9z"/></svg>
-        </button>
-    </div>
+    <div class="app-wrapper">
+        <div class="top-right-controls">
+            <button class="control-button" id="clear-chat-button" title="Clear Chat">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>
+            </button>
+            <button class="control-button" id="changelog-button" title="Changelog">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M13,13H16V15H13V13M8,17H16V19H8V17Z" /></svg>
+            </button>
+            <button class="control-button" id="theme-switcher" title="Switch Theme">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zM0 12C0 5.4 5.4 0 12 0s12 5.4 12 12-5.4 12-12 12S0 18.6 0 12zm12-9a9 9 0 0 0-9 9 9 9 0 0 0 9 9z"/></svg>
+            </button>
+        </div>
 
-    <div class="character-container" id="character-container">
-        <div class="limb arm left"></div>
-        <div class="limb arm right"></div>
-        <div class="limb leg left"></div>
-        <div class="limb leg right"></div>
-        <div class="character-body" id="character-body">
-            <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
-            <div class="lips"></div>
-            <div class="stomach"><div class="name">BABLI</div></div>
+        <div class="character-container" id="character-container">
+            <div class="limb arm left"></div>
+            <div class="limb arm right"></div>
+            <div class="limb leg left"></div>
+            <div class="limb leg right"></div>
+            <div class="character-body" id="character-body">
+                <div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div>
+                <div class="lips"></div>
+                <div class="stomach"><div class="name">BABLI</div></div>
+            </div>
         </div>
-    </div>
-    
-    <div class="chat-ui">
-        <div class="chat-box" id="chat-box">
-             </div>
-        <div class="loading-spinner" id="loading-spinner"></div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="Type Your Msg...">
-            <button class="action-button" id="send-button">Fluffy</button>
-        </div>
-        <div class="action-buttons">
-            <button class="action-button" id="story-button">Khani Sunao ✨</button>
-            <button class="action-button" id="color-button">Rang Badlo 🎨</button>
-            <button class="action-button" id="clear-chat-button">Chat Saaf Karo 🗑️</button>
+        
+        <div class="chat-ui">
+            <div class="chat-box" id="chat-box"></div>
+            <div class="loading-spinner" id="loading-spinner"></div>
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="Type Your Msg...">
+                <button class="action-button send-btn" id="send-button">➤</button>
+            </div>
+            <div class="action-buttons">
+                <button class="action-button" id="story-button">Khani Sunao ✨</button>
+                <button class="action-button" id="color-button">Rang Badlo 🎨</button>
+            </div>
         </div>
     </div>
 
