@@ -257,7 +257,7 @@ async function getGeminiResponse(prompt) {
     loadingSpinner.style.display = 'block';
     setUiState(false);
 
-    const botMessageElement = addMessage('', 'bot', true); // Add an empty bot message container
+    const botMessageElement = addMessage('', 'bot', true); 
     
     try {
         const response = await fetch(apiUrl, {
@@ -273,36 +273,31 @@ async function getGeminiResponse(prompt) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullResponse = "";
-        let sentiment = "neutral";
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
-            
-            lines.forEach(line => {
-                if (line.startsWith('data: ')) {
-                    const jsonStr = line.substring(6);
-                    if (jsonStr) {
-                        try {
-                            const parsed = JSON.parse(jsonStr);
-                            if (parsed.sentiment) {
-                                sentiment = parsed.sentiment;
-                            }
-                            if (parsed.text) {
-                                fullResponse += parsed.text;
-                                botMessageElement.textContent = fullResponse;
-                                chatBox.scrollTop = chatBox.scrollHeight;
-                            }
-                        } catch (e) {
-                            // Ignore JSON parsing errors for incomplete chunks
-                        }
-                    }
-                }
-            });
+            fullResponse += chunk;
+            botMessageElement.textContent = fullResponse;
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
+        
+        const lastMessage = conversation[conversation.length - 1];
+        if(lastMessage && lastMessage.sender === 'bot') {
+            lastMessage.text = fullResponse;
+        }
+        saveConversation();
+
+    } catch (error) {
+        console.error("Frontend Fetch Error:", error);
+        botMessageElement.textContent = `Oops! Something went wrong. (${error.message})`;
+    } finally {
+        loadingSpinner.style.display = 'none';
+        setUiState(true);
+    }
+}
         
         conversation.push({ text: fullResponse, sender: 'bot' });
         saveConversation();
@@ -342,7 +337,7 @@ async function handleSend() {
     if (!message) return;
     addMessage(message, 'user', true);
     userInput.value = '';
-    const prompt = `Analyze the sentiment (positive, negative, neutral) of the user's message and then respond. You are BABLi, a cute, Naughty, thariki An very fluffy, and friendly character made of Cotton. A user is talking to you. Be sweet, curious, and keep your answers very short and cute, like a child would speak, Always add Small Love Poetry in end of msg, Use "Modern Colloquial Urdu" "Informal Conversational Urdu" Roman Urdu, use lots of Chat releted emojis every whare in chat, i am also babli call me babli to. User's message: "${message}"`;
+    const prompt = `Analyze the sentiment (positive, negative, neutral) of the user's message and then respond. You are BABLi, a cute, Naughty, thariki An very fluffy, and friendly character made of Cotton. A user is talking to you. Be sweet, curious, and keep your answers very Good and cute, like a child would speak, Always add Small Love Poetry in end of msg, Use "Modern Colloquial Urdu" "Informal Conversational Urdu" Roman Urdu, use lots of Chat releted emojis every whare in chat, . User's message: "${message}"`;
     await getGeminiResponse(prompt);
 }
 
